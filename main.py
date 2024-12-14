@@ -18,6 +18,14 @@ def get_count_of_duplicates(df):
     count_duplicates = len(df) - len(df.drop_duplicates())
     print(f"Очищено записей: {count_duplicates}")
 
+def prepare_data():
+    df = openFile()
+    cleaner = Cleaner()
+    df = cleaner.clean_duration(df)
+    df = extract_year(df)
+    df = df.dropna(subset=['Year'])
+    return df
+
 # Функция для анализа среднего рейтинга по жанрам
 def analyze_genres(df):
     df['Genres'] = df['Genres'].str.split(',')
@@ -25,6 +33,7 @@ def analyze_genres(df):
     df = df[df['Genres'] != 'Unknown']
     
     genre_ratings = df.groupby('Genres')['Rating'].mean().sort_values(ascending=False)
+    genre_ratings = genre_ratings.dropna()
 
     plt.figure(figsize=(12, 6))
     ax = genre_ratings.plot(kind='bar', color='skyblue', edgecolor='black')
@@ -42,6 +51,7 @@ def analyze_genres(df):
 
     print("Средние рейтинги по жанрам:")
     print(genre_ratings)
+
 
 # Функция для очистки и преобразования продолжительности
 def clean_duration(df):
@@ -62,6 +72,7 @@ def clean_duration(df):
 
 # Функция для анализа продолжительности фильмов
 def analyze_duration(df):
+    df = clean_duration(df)
     df = df[df['Duration'] > 0] 
     lower_percentile = df['Duration'].quantile(0.02)
     upper_percentile = df['Duration'].quantile(0.98)
@@ -161,12 +172,11 @@ def analyze_correlation(df):
     print(corr_matrix)
 
 def main():
-    df = openFile()
-    cleaner = Cleaner()
-    df = cleaner.clean_duration(df)
-    df = extract_year(df)
-    df = df.dropna(subset=['Year'])
-    
+    df = prepare_data()    
+    # analyze_genres(df)
+    # analyze_duration(df)
+    # analyze_average_rating_by_year(df)
+    # analyze_movie_count_by_year(df)
     analyze_correlation(df)
 
 if __name__ == '__main__':
